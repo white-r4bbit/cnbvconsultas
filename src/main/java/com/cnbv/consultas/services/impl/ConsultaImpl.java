@@ -155,6 +155,8 @@ public class ConsultaImpl implements ConsultaService {
 				receptorToInsert.setActiva(true);
 				receptorToInsert.setInterno(receptorDtoRequest.isEsInterna());
 				receptorToInsert.setConsulta(consultaSaved);
+				receptorToInsert.setFirmante(receptorDtoRequest.getEstatusSolicitudResponse().getFirmante());
+				receptorToInsert.setEstatusSolicitud(receptorDtoRequest.getEstatusSolicitudResponse().getEstatusSolicitud());
 
 				if (receptorDtoRequest.isEsInterna() == false) {
 
@@ -266,9 +268,15 @@ public class ConsultaImpl implements ConsultaService {
 			receptorDetail.setComentarios(receptor.get().getComentartios());
 			receptorDetail.setFechaRespuesta(receptor.get().getFechaRespuesta());
 			receptorDetail.setIdEnvio(receptor.get().getIdEnvio());
+			
+			receptorDetail.setFirmante(receptor.get().getFirmante());
+			receptorDetail.setEstatusSolicitud(receptor.get().getEstatusSolicitud());
+			receptorDetail.setComentarioFirmante(receptor.get().getComentarioFirmante());
+			
 			receptorDetail.setArchivos(receptor.get().getArchivosReceptor().stream().map(archivosDto -> {
 				ArchivoConsultaDtoResponse archivo = new ArchivoConsultaDtoResponse();
 
+				archivo.setId(archivosDto.getId());
 				archivo.setRuta(archivosDto.getRuta());
 				archivo.setNombre(archivosDto.getNombre());
 				archivo.setFechaCreacion(archivosDto.getFechaCreacion());

@@ -50,6 +50,13 @@ public class ConsultaReceptor {
 	private String idEnvio;
 	@OneToMany(mappedBy ="consultaReceptor", cascade = CascadeType.ALL)
 	private List<ArchivoConsulta> archivosReceptor;
+	@Column(name = "firmante",nullable = true,length = 255)
+	private String firmante;
+	@Column(name = "estatusSolicitud",nullable = true,length = 255)
+	private String estatusSolicitud;
+	@Column(name = "comentarioFirmante",nullable = true,length = 255)
+	private String comentarioFirmante;
+	
 	public int getId() {
 		return id;
 	}
@@ -135,8 +142,24 @@ public class ConsultaReceptor {
 	public void setNombre(String nombre) {
 		this.nombre = nombre;
 	}
-
-
+	public String getFirmante() {
+		return firmante;
+	}
+	public void setFirmante(String firmante) {
+		this.firmante = firmante;
+	}
+	public String getEstatusSolicitud() {
+		return estatusSolicitud;
+	}
+	public void setEstatusSolicitud(String estatusSolicitud) {
+		this.estatusSolicitud = estatusSolicitud;
+	}
+	public String getComentarioFirmante() {
+		return comentarioFirmante;
+	}
+	public void setComentarioFirmante(String comentarioFirmante) {
+		this.comentarioFirmante = comentarioFirmante;
+	}
 
 	
 	

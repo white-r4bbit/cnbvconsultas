@@ -5,12 +5,19 @@ import java.time.ZonedDateTime;
 
 public class ArchivoConsultaDtoResponse {
 
-	
+
+	private Integer id;
 	private String ruta;
 	private String nombre;
 	private ZonedDateTime fechaCreacion;
 	private String tipoElemento;
 	private String tipoDocumento;
+	public Integer getId() {
+		return id;
+	}
+	public void setId(Integer id) {
+		this.id = id;
+	}
 	public String getRuta() {
 		return ruta;
 	}

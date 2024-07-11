@@ -15,7 +15,10 @@ public class ConsultaReceptorDetalleDto {
 	private ZonedDateTime fechaRespuesta;
 	private String idEnvio;
 	private List<ArchivoConsultaDtoResponse> archivos;
-	
+	private String firmante;
+	private String estatusSolicitud;
+	private String comentarioFirmante;
+
 	
 	
 	public int getId() {
@@ -67,6 +70,24 @@ public class ConsultaReceptorDetalleDto {
 	public void setNombre(String nombre) {
 		this.nombre = nombre;
 	}
-
+	public String getFirmante() {
+		return firmante;
+	}
+	public void setFirmante(String firmante) {
+		this.firmante = firmante;
+	}	
+	public String getEstatusSolicitud() {
+		return estatusSolicitud;
+	}
+	public void setEstatusSolicitud(String estatusSolicitud) {
+		this.estatusSolicitud = estatusSolicitud;
+		
+	}	
+	public String getComentarioFirmante() {
+		return comentarioFirmante;
+	}
+	public void setComentarioFirmante(String comentarioFirmante) {
+		this.comentarioFirmante = comentarioFirmante;
+	}
 	
 }
