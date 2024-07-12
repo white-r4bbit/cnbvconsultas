@@ -1,0 +1,56 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- dev
+- qa
+- prod
+
+stages:
+  - stage: 'Dev'
+    condition: and(always(),eq(variables['Build.SourceBranch'], 'refs/heads/dev'))
+    displayName: Build image
+    jobs:
+      - job: Build
+        displayName: Build
+        pool: AgentPoolCNBV        
+        steps:   
+    
+        - task: Docker@2
+          inputs:
+            containerRegistry: 'ACR-dev-conecta-procesos'
+            repository: 'solicitud-consultas'
+            command: 'build'
+            Dockerfile: '**/Dockerfile'
+            arguments: '--build-arg clientId=$(KVConfigClientId) --build-arg secretId=$(KVConfigClientSecretId) --build-arg url=$(KVConfigKVUrl) --build-arg tenanId=$(KVConfigTenantId)'
+
+        - task: Docker@2
+          inputs:
+            containerRegistry: 'ACR-dev-conecta-procesos'
+            repository: 'solicitud-consultas'
+            command: 'push'
+
+  - stage: 'Qa'
+    condition: and(always(),eq(variables['Build.SourceBranch'], 'refs/heads/qa'))
+    displayName: Build image
+    jobs:
+      - job: Build
+        displayName: Build
+        pool: AgentPoolCNBV        
+        steps:   
+
+        - task: Docker@2
+          inputs:
+            containerRegistry: 'ACR-qa-conecta-procesos'
+            repository: 'solicitud-consultas'
+            command: 'build'
+            Dockerfile: '**/Dockerfile'
+            arguments: '--build-arg clientId=$(KVConfigClientIdqa) --build-arg secretId=$(KVConfigClientSecretIdqa) --build-arg url=$(KVConfigKVUrlqa) --build-arg tenanId=$(KVConfigTenantId)'
+
+        - task: Docker@2
+          inputs:
+            containerRegistry: 'ACR-qa-conecta-procesos'
+            repository: 'solicitud-consultas'
+            command: 'push'

@@ -1,0 +1,47 @@
+{"properties": [
+  {
+    "name": "spring.datasource.consultas.jdbc-url",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.datasource.consultas.jdbc-url'"
+  },
+  {
+    "name": "spring.datasource.consultas.username",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.datasource.consultas.username'"
+  },
+  {
+    "name": "spring.datasource..empleados.password",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.datasource..empleados.password'"
+  },
+  {
+    "name": "spring.datasource.consultas.password",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.datasource.consultas.password'"
+  },
+  {
+    "name": "KVClientId",
+    "type": "java.lang.String",
+    "description": "A description for 'KVClientId'"
+  },
+  {
+    "name": "KVClientSecretId",
+    "type": "java.lang.String",
+    "description": "A description for 'KVClientSecretId'"
+  },
+  {
+    "name": "KVTenantId",
+    "type": "java.lang.String",
+    "description": "A description for 'KVTenantId'"
+  },
+  {
+    "name": "KVUrl",
+    "type": "java.lang.String",
+    "description": "A description for 'KVUrl'"
+  },
+  {
+    "name": "KVClientId",
+    "type": "java.lang.String",
+    "description": "A description for 'KVClientId'"
+  }
+]}
