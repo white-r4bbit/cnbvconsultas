@@ -15,5 +15,5 @@ public interface ReceptorRepository extends JpaRepository<ConsultaReceptor, Inte
 	@Query("SELECT COUNT (e.idEnvio) from ConsultaReceptor e")
 	int listIdEnvio();
 
-	
+	List<ConsultaReceptor> findByEstatusSolicitud(String estatusSolicitud);
 }

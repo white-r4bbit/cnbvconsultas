@@ -1,6 +1,7 @@
 package com.cnbv.consultas.services;
 
 import java.util.List;
+import java.util.Set;
 
 import com.cnbv.consultas.dtoRequest.ArchivoAdicionalDto;
 import com.cnbv.consultas.dtoRequest.ArchivoConsultaDto;
@@ -25,6 +26,7 @@ public interface ConsultaService {
 	Boolean finalizarConsultaExterna(FinalizarConsultaExternaDto finalizarConsultaExternaDto);
 	ConsultaExternaDetalle consultarConsultaExterna(String idEnvio);
 	Boolean agregarArchivos(ArchivoAdicionalDto archivo);
+	Set<String> obtenerAsuntosPendienteFirma();
 		
 	
 }

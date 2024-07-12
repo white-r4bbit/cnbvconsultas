@@ -2,10 +2,13 @@ package com.cnbv.consultas.services.impl;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -497,5 +500,30 @@ public class ConsultaImpl implements ConsultaService {
 		return consultaExternaDetalle;
 
 	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public Set<String> obtenerAsuntosPendienteFirma() {
+
+
+		List<ConsultaReceptor> receptoresPendientes =  receptorRepository.findByEstatusSolicitud("PENDIENTE DE FIRMA");
+        Set<String> foliosPendientesFirma = new HashSet<>();
+		
+		for(ConsultaReceptor receptor: receptoresPendientes) {
+			
+			
+			foliosPendientesFirma.add(receptor.getConsulta().getFolioAsunto()); 
+			
+			
+		}
+		
+		
+		return foliosPendientesFirma;
+		
+		
+	}
+	
+	
+
 
 }
