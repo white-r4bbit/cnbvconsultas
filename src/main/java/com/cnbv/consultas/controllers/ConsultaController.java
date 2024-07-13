@@ -1,6 +1,8 @@
 package com.cnbv.consultas.controllers;
 
 import java.util.List;
+import java.util.Set;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -224,5 +226,21 @@ public class ConsultaController {
 		}
 
 	}
+
+
+	
+	@Operation(tags = "Consultas", summary = "Permite traer los asuntos pendientes de firma.")
+	@GetMapping(value = "/obtenerAsuntosPendienteFirma")
+	public ResponseEntity<Set<String>> obtenerAsuntosPendienteFirma() {
+
+		Set<String> pendientesFirma = solicitudConsulta.obtenerAsuntosPendienteFirma();
+
+			return new ResponseEntity<>(pendientesFirma, HttpStatus.OK);
+
+
+		
+
+	}
+
 
 }

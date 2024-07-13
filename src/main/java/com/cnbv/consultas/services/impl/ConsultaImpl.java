@@ -2,10 +2,13 @@ package com.cnbv.consultas.services.impl;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -236,6 +239,9 @@ public class ConsultaImpl implements ConsultaService {
 					consultaReceptorDto.setObligatoria(receptorEntity.isObligatoria());
 					consultaReceptorDto.setEnProceso(receptorEntity.isActiva());
 					consultaReceptorDto.setIdEnvio(receptorEntity.getIdEnvio());
+					consultaReceptorDto.setFirmante(receptorEntity.getFirmante());
+					consultaReceptorDto.setEstatusSolicitud(receptorEntity.getEstatusSolicitud());
+					consultaReceptorDto.setComentarioFirmante(receptorEntity.getComentarioFirmante());
 					return consultaReceptorDto;
 
 				}).sorted(Comparator.comparing(ConsultaReceptorDto::getFechaRespuesta).reversed()).collect(Collectors.toList()));
@@ -294,6 +300,7 @@ public class ConsultaImpl implements ConsultaService {
 					.setArchivos(receptor.get().getConsulta().getArchivoConsulta().stream().map(archivosDto -> {
 						ArchivoConsultaDtoResponse archivoConsulta = new ArchivoConsultaDtoResponse();
 
+						archivoConsulta.setId(archivosDto.getId());
 						archivoConsulta.setRuta(archivosDto.getRuta());
 						archivoConsulta.setNombre(archivosDto.getNombre());
 						archivoConsulta.setFechaCreacion(archivosDto.getFechaCreacion());
@@ -493,5 +500,30 @@ public class ConsultaImpl implements ConsultaService {
 		return consultaExternaDetalle;
 
 	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public Set<String> obtenerAsuntosPendienteFirma() {
+
+
+		List<ConsultaReceptor> receptoresPendientes =  receptorRepository.findByEstatusSolicitud("PENDIENTE DE FIRMA");
+        Set<String> foliosPendientesFirma = new HashSet<>();
+		
+		for(ConsultaReceptor receptor: receptoresPendientes) {
+			
+			
+			foliosPendientesFirma.add(receptor.getConsulta().getFolioAsunto()); 
+			
+			
+		}
+		
+		
+		return foliosPendientesFirma;
+		
+		
+	}
+	
+	
+
 
 }

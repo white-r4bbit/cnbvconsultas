@@ -19,7 +19,7 @@ public class ArchivoConsulta {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "Id")
-	private int id;
+	private Integer id;
 	@Column(name = "Ruta",length = 1000, nullable = false)
 	private String ruta;
 	@Column(name = "FechaCreacion",nullable = false)

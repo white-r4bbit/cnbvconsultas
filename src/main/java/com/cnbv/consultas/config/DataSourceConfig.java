@@ -18,9 +18,7 @@ public class DataSourceConfig {
 	public DataSource dataSource() {
 		// Obtén la cadena de conexión y otros secretos necesarios
 		
-		// String connectionString = secretClient.getSecret("CNBV--ConectaProcesos--DbConnection--Java").getValue();
-
-		String connectionString = "jdbc:sqlserver://172.16.132.77\\SQLDES3CS;databaseName=ConectaProcesosRefactor;integratedSecurity=false;encrypt=true;trustServerCertificate=true;user=idgenConectaProcesos;password=db*VqR_oebv18erbB0";
+		String connectionString = secretClient.getSecret("CNBV--ConectaProcesos--DbConnection--Java").getValue();
 
 		return DataSourceBuilder.create().url(connectionString)
 				.driverClassName("com.microsoft.sqlserver.jdbc.SQLServerDriver").build();

@@ -12,6 +12,9 @@ public class ConsultaReceptorDto {
 	private boolean obligatoria;
 	private boolean enProceso;
 	private String idEnvio;
+	private String firmante;
+	private String estatusSolicitud;
+	private String comentarioFirmante;
 
 	public int getId() {
 		return id;
@@ -77,4 +80,27 @@ public class ConsultaReceptorDto {
 		this.nombre = nombre;
 	}
 
+	public String getFirmante() {
+		return firmante;
+	}
+
+	public void setFirmante(String firmante) {
+		this.firmante = firmante;
+	}	
+	
+	public String getEstatusSolicitud() {
+		return estatusSolicitud;
+	}
+
+	public void setEstatusSolicitud(String estatusSolicitud) {
+		this.estatusSolicitud = estatusSolicitud;
+	}	
+	
+	public String getComentarioFirmante() {
+		return comentarioFirmante;
+	}
+
+	public void setComentarioFirmante(String comentarioFirmante) {
+		this.comentarioFirmante = comentarioFirmante;
+	}
 }

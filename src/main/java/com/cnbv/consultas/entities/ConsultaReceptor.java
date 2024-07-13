@@ -50,11 +50,11 @@ public class ConsultaReceptor {
 	private String idEnvio;
 	@OneToMany(mappedBy ="consultaReceptor", cascade = CascadeType.ALL)
 	private List<ArchivoConsulta> archivosReceptor;
-	@Column(name = "firmante",nullable = true,length = 255)
+	@Column(name = "Firmante",nullable = true,length = 255)
 	private String firmante;
-	@Column(name = "estatusSolicitud",nullable = true,length = 255)
+	@Column(name = "EstatusSolicitud",nullable = true,length = 255)
 	private String estatusSolicitud;
-	@Column(name = "comentarioFirmante",nullable = true,length = 255)
+	@Column(name = "ComentarioFirmante",nullable = true,length = 255)
 	private String comentarioFirmante;
 	
 	public int getId() {

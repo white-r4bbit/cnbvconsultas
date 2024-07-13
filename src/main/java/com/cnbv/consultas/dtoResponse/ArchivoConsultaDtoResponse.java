@@ -12,6 +12,7 @@ public class ArchivoConsultaDtoResponse {
 	private ZonedDateTime fechaCreacion;
 	private String tipoElemento;
 	private String tipoDocumento;
+	
 	public Integer getId() {
 		return id;
 	}
