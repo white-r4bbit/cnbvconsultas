@@ -19,13 +19,16 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import com.azure.security.keyvault.secrets.SecretClient;
 import com.cnbv.consultas.customGlobalExceptions.IlegalActionException;
 import com.cnbv.consultas.dtoRequest.ArchivoAdicionalDto;
+import com.cnbv.consultas.dtoRequest.ArchivoConsultaRequestDto;
 import com.cnbv.consultas.dtoRequest.ConsultaDto;
 import com.cnbv.consultas.dtoRequest.ConsultaReceptorDetalleDto;
 import com.cnbv.consultas.dtoRequest.ConsultaReceptorDto;
+import com.cnbv.consultas.dtoRequest.ConsultaRequest;
 import com.cnbv.consultas.dtoRequest.FinalizarConsultaDto;
 import com.cnbv.consultas.dtoRequest.FinalizarConsultaExternaDto;
 import com.cnbv.consultas.dtoRequest.ReceptorDto;
 import com.cnbv.consultas.dtoResponse.ArchivoConsultaDtoResponse;
+import com.cnbv.consultas.dtoResponse.ConsultaCreateResponse;
 import com.cnbv.consultas.dtoResponse.ConsultaDetalleResponse;
 import com.cnbv.consultas.dtoResponse.ConsultaDtoResponse;
 import com.cnbv.consultas.dtoResponse.ConsultaExternaDetalle;
@@ -36,6 +39,7 @@ import com.cnbv.consultas.entities.TipoDocumentoEnum;
 import com.cnbv.consultas.entities.TipoElementoEnum;
 import com.cnbv.consultas.models.EnvioBside;
 import com.cnbv.consultas.models.EstatusAsunto;
+import com.cnbv.consultas.repositories.ArchivosRepository;
 import com.cnbv.consultas.repositories.ConsultaRepository;
 import com.cnbv.consultas.repositories.ReceptorRepository;
 import com.cnbv.consultas.repositories.TipoDocumentoRepository;
@@ -56,7 +60,8 @@ public class ConsultaImpl implements ConsultaService {
 	private ReceptorRepository receptorRepository;
 	@Autowired
 	private SecretClient secretClient;
-
+	@Autowired
+	private ArchivosRepository archivosRepository;
 	private final WebClient.Builder webClientBuilder;
 
 	public ConsultaImpl(WebClient.Builder webClientBuilder) {
@@ -73,7 +78,8 @@ public class ConsultaImpl implements ConsultaService {
 				.header("Ocp-Apim-Subscription-Key", subscriptionKey).retrieve().bodyToMono(EnvioBside.class);
 	}
 
-	public Mono<String> getIdEnvio(int idEntidad, int tipoEntidad, int idAsunto, String folioAsunto, int areaResponsable) {
+	public Mono<String> getIdEnvio(int idEntidad, int tipoEntidad, int idAsunto, String folioAsunto,
+			int areaResponsable) {
 
 		String url = secretClient.getSecret("CNBV--Apim").getValue();
 		WebClient webClient = this.webClientBuilder.baseUrl(url).build();
@@ -108,17 +114,17 @@ public class ConsultaImpl implements ConsultaService {
 		estatusAsunto.setAccion("SOLICITUD_FINALIZADA");
 
 		try {
-	        webClient.post()
-	                 .uri("/actualizarasunto/estatus")
-	                 .bodyValue(estatusAsunto)
-	                 .retrieve()
-	                 .toBodilessEntity()
-	                 .block();
-	    } catch (WebClientResponseException e) {
-	        throw new IlegalActionException("Error al enviar la solicitud: " + e.getStatusCode());
-	    } catch (Exception e) {
-	        throw new IlegalActionException("Error durante la petición al Gestor Asuntos");
-	    }
+			webClient.post()
+					.uri("/actualizarasunto/estatus")
+					.bodyValue(estatusAsunto)
+					.retrieve()
+					.toBodilessEntity()
+					.block();
+		} catch (WebClientResponseException e) {
+			throw new IlegalActionException("Error al enviar la solicitud: " + e.getStatusCode());
+		} catch (Exception e) {
+			throw new IlegalActionException("Error durante la petición al Gestor Asuntos");
+		}
 	}
 
 	@Override
@@ -129,56 +135,59 @@ public class ConsultaImpl implements ConsultaService {
 
 	@Transactional
 	@Override
-	public int solicitarConsulta(ConsultaDto consultaDto) {
+	public ConsultaCreateResponse solicitarConsulta(ConsultaDto consultaDto) {
 
-		List<Consulta> consultasToCheck = consulta.findByFolioAsunto(consultaDto.getFolioAsunto());
-		List<Boolean> consultasActivas = consultasToCheck.stream().map(check -> check.isActiva())
-				.filter(activas -> activas.equals(true)).collect(Collectors.toList());
+		// // List<Consulta> consultasToCheck =
+		// consulta.findByFolioAsunto(consultaDto.getFolioAsunto());
+		// // List<Boolean> consultasActivas = consultasToCheck.stream().map(check ->
+		// check.isActiva())
+		// // .filter(activas -> activas.equals(true)).collect(Collectors.toList());
 
-		if (consultasActivas.size() == 0) {
-			Consulta consultaToInsert = new Consulta();
-			consultaToInsert.setFolioAsunto(consultaDto.getFolioAsunto());
-			consultaToInsert.setFechaSolicitud(ZonedDateTime.now(ZoneId.of("America/Mexico_City")));
-			consultaToInsert.setDetalle(consultaDto.getComentarios());
-			consultaToInsert.setActiva(true);
-			consultaToInsert.setSecuenciaFirma(consultaDto.getSecuenciaFirma());
-			consultaToInsert.setCadenaOriginal(consultaDto.getCadenaOriginal());
-			List<Consulta> consultasList = consulta.findByFolioAsunto(consultaDto.getFolioAsunto());
+		// // if (consultasActivas.size() == 0) {
+		Consulta consultaToInsert = new Consulta();
+		consultaToInsert.setFolioAsunto(consultaDto.getFolioAsunto());
+		consultaToInsert.setFechaSolicitud(ZonedDateTime.now(ZoneId.of("America/Mexico_City")));
+		consultaToInsert.setDetalle(consultaDto.getComentarios());
+		consultaToInsert.setActiva(true);
+		consultaToInsert.setSecuenciaFirma(consultaDto.getSecuenciaFirma());
+		consultaToInsert.setCadenaOriginal(consultaDto.getCadenaOriginal());
+		List<Consulta> consultasList = consulta.findByFolioAsunto(consultaDto.getFolioAsunto());
 
-			consultaToInsert.setVersion(consultasList.size() + 1);
+		consultaToInsert.setVersion(consultasList.size() + 1);
 
-			Consulta consultaSaved = consulta.save(consultaToInsert);
+		Consulta consultaSaved = consulta.save(consultaToInsert);
 
-			for (ReceptorDto receptorDtoRequest : consultaDto.getReceptores()) {
+		List<Integer> receptorIds = new ArrayList<>();
 
-				ConsultaReceptor receptorToInsert = new ConsultaReceptor();
-				receptorToInsert.setClave(receptorDtoRequest.getClave());
-				receptorToInsert.setNombre(receptorDtoRequest.getNombre());
-				receptorToInsert.setObligatoria(receptorDtoRequest.isEsObligatoria());
-				receptorToInsert.setActiva(true);
-				receptorToInsert.setInterno(receptorDtoRequest.isEsInterna());
-				receptorToInsert.setConsulta(consultaSaved);
-				receptorToInsert.setFirmante(receptorDtoRequest.getEstatusSolicitudResponse().getFirmante());
-				receptorToInsert.setEstatusSolicitud(receptorDtoRequest.getEstatusSolicitudResponse().getEstatusSolicitud());
+		for (ReceptorDto receptorDtoRequest : consultaDto.getReceptores()) {
 
-				if (receptorDtoRequest.isEsInterna() == false) {
+			ConsultaReceptor receptorToInsert = new ConsultaReceptor();
+			receptorToInsert.setClave(receptorDtoRequest.getClave());
+			receptorToInsert.setNombre(receptorDtoRequest.getNombre());
+			receptorToInsert.setObligatoria(receptorDtoRequest.isEsObligatoria());
+			receptorToInsert.setActiva(true);
+			receptorToInsert.setInterno(receptorDtoRequest.isEsInterna());
+			receptorToInsert.setConsulta(consultaSaved);
+			receptorToInsert.setFirmante(receptorDtoRequest.getFirmante());
+			receptorToInsert.setEstatusSolicitud(receptorDtoRequest.getEstatusSolicitud());
 
-					String idEnvio = getIdEnvio(receptorDtoRequest.getEntidadExterna().getId(),
-							receptorDtoRequest.getEntidadExterna().getTipo(), consultaDto.getAsunto().getId(),
-							consultaDto.getAsunto().getFolio(),consultaDto.getAreaResponsable()).block();
+			if (receptorDtoRequest.isEsInterna() == false) {
 
-					receptorToInsert.setIdEnvio(idEnvio);
+				String idEnvio = getIdEnvio(receptorDtoRequest.getEntidadExterna().getId(),
+						receptorDtoRequest.getEntidadExterna().getTipo(), consultaDto.getAsunto().getId(),
+						consultaDto.getAsunto().getFolio(), consultaDto.getAreaResponsable()).block();
 
-				}
-				receptorRepository.save(receptorToInsert);
+				receptorToInsert.setIdEnvio(idEnvio);
 
 			}
+			receptorRepository.save(receptorToInsert);
 
-			return consultaSaved.getId();
-
-		} else {
-			return 0;
+			receptorIds.add(receptorToInsert.getId());
 		}
+
+		int id = consultaSaved.getId();
+
+		return new ConsultaCreateResponse(id, receptorIds);
 	}
 
 	@Transactional
@@ -200,6 +209,8 @@ public class ConsultaImpl implements ConsultaService {
 				TipoElementoEnum elem = elementoRepository.findByNombre(file.getTipoElemento());
 				archivoConsulta.setTipoElementoEnum(elem);
 				archivoConsulta.setConsultaId(consultaEntity);
+				archivoConsulta.setEliminado(false);
+				
 				return archivoConsulta;
 
 			}).collect(Collectors.toList());
@@ -244,10 +255,12 @@ public class ConsultaImpl implements ConsultaService {
 					consultaReceptorDto.setComentarioFirmante(receptorEntity.getComentarioFirmante());
 					return consultaReceptorDto;
 
-				}).sorted(Comparator.comparing(ConsultaReceptorDto::getFechaRespuesta).reversed()).collect(Collectors.toList()));
+				}).sorted(Comparator.comparing(ConsultaReceptorDto::getFechaRespuesta).reversed())
+						.collect(Collectors.toList()));
 				return consultaDtoResponse;
 
-			}).sorted(Comparator.comparing(ConsultaDtoResponse::getFechaSolicitud).reversed()).collect(Collectors.toList());
+			}).sorted(Comparator.comparing(ConsultaDtoResponse::getFechaSolicitud).reversed())
+					.collect(Collectors.toList());
 
 			return consultasResponse;
 
@@ -274,11 +287,11 @@ public class ConsultaImpl implements ConsultaService {
 			receptorDetail.setComentarios(receptor.get().getComentartios());
 			receptorDetail.setFechaRespuesta(receptor.get().getFechaRespuesta());
 			receptorDetail.setIdEnvio(receptor.get().getIdEnvio());
-			
+
 			receptorDetail.setFirmante(receptor.get().getFirmante());
 			receptorDetail.setEstatusSolicitud(receptor.get().getEstatusSolicitud());
 			receptorDetail.setComentarioFirmante(receptor.get().getComentarioFirmante());
-			
+
 			receptorDetail.setArchivos(receptor.get().getArchivosReceptor().stream().map(archivosDto -> {
 				ArchivoConsultaDtoResponse archivo = new ArchivoConsultaDtoResponse();
 
@@ -291,7 +304,8 @@ public class ConsultaImpl implements ConsultaService {
 
 				return archivo;
 
-			}).sorted(Comparator.comparing(ArchivoConsultaDtoResponse::getFechaCreacion).reversed()).collect(Collectors.toList()));
+			}).sorted(Comparator.comparing(ArchivoConsultaDtoResponse::getFechaCreacion).reversed())
+					.collect(Collectors.toList()));
 
 			detalleConsultaResponse.setId(receptor.get().getConsulta().getId());
 			detalleConsultaResponse.setComentarios(receptor.get().getConsulta().getDetalle());
@@ -309,7 +323,8 @@ public class ConsultaImpl implements ConsultaService {
 
 						return archivoConsulta;
 
-					}).sorted(Comparator.comparing(ArchivoConsultaDtoResponse::getFechaCreacion).reversed()).collect(Collectors.toList()));
+					}).sorted(Comparator.comparing(ArchivoConsultaDtoResponse::getFechaCreacion).reversed())
+							.collect(Collectors.toList()));
 
 			return detalleConsultaResponse;
 
@@ -398,14 +413,13 @@ public class ConsultaImpl implements ConsultaService {
 		if (receptorBd.isPresent()) {
 			if (receptorBd.get().isInterno() == false) {
 				if (receptorBd.get().isActiva()) {
-					if(finalizarConsultaExternaDto.getFirmaElectronica()!=null){
+					if (finalizarConsultaExternaDto.getFirmaElectronica() != null) {
 
-
-					
-					receptorBd.get()
-							.setSecuenciaFirma(finalizarConsultaExternaDto.getFirmaElectronica().getSecuencia());
-					receptorBd.get()
-							.setCadenaOriginal(finalizarConsultaExternaDto.getFirmaElectronica().getCadenaOriginal());
+						receptorBd.get()
+								.setSecuenciaFirma(finalizarConsultaExternaDto.getFirmaElectronica().getSecuencia());
+						receptorBd.get()
+								.setCadenaOriginal(
+										finalizarConsultaExternaDto.getFirmaElectronica().getCadenaOriginal());
 					}
 					receptorBd.get().setFechaRespuesta(ZonedDateTime.now(ZoneId.of("America/Mexico_City")));
 					receptorBd.get().setActiva(false);
@@ -476,7 +490,7 @@ public class ConsultaImpl implements ConsultaService {
 
 		ConsultaReceptor receptor = receptorRepository.findByIdEnvio(idEnvio)
 				.orElseThrow(() -> new IlegalActionException("El usuario no existe"));
-		String detalleConsulta =  receptor.getConsulta().getDetalle();
+		String detalleConsulta = receptor.getConsulta().getDetalle();
 		List<ArchivoConsultaDtoResponse> archivosReceptor = receptor.getConsulta().getArchivoConsulta().stream()
 				.map(archivoDto -> {
 
@@ -490,40 +504,149 @@ public class ConsultaImpl implements ConsultaService {
 
 					return archivo;
 
-				}).sorted(Comparator.comparing(ArchivoConsultaDtoResponse::getFechaCreacion).reversed()).collect(Collectors.toList());
+				}).sorted(Comparator.comparing(ArchivoConsultaDtoResponse::getFechaCreacion).reversed())
+				.collect(Collectors.toList());
 
 		ConsultaExternaDetalle consultaExternaDetalle = new ConsultaExternaDetalle();
-		
+
 		consultaExternaDetalle.setDetalle(detalleConsulta);
 		consultaExternaDetalle.setDocumentos(archivosReceptor);
-		
+
 		return consultaExternaDetalle;
 
 	}
 
 	@Override
 	@Transactional(readOnly = true)
-	public Set<String> obtenerAsuntosPendienteFirma() {
+	public Set<String> obtenerAsuntosPendienteFirma(String firmante) {
 
+		// // List<ConsultaReceptor> receptoresPendientes =
+		// receptorRepository.findByEstatusSolicitud("PENDIENTE DE FIRMA");
 
-		List<ConsultaReceptor> receptoresPendientes =  receptorRepository.findByEstatusSolicitud("PENDIENTE DE FIRMA");
-        Set<String> foliosPendientesFirma = new HashSet<>();
-		
-		for(ConsultaReceptor receptor: receptoresPendientes) {
-			
-			
-			foliosPendientesFirma.add(receptor.getConsulta().getFolioAsunto()); 
-			
-			
+		List<ConsultaReceptor> receptoresPendientes = receptorRepository
+				.findByEstatusSolicitudAndFirmante("PENDIENTE DE FIRMA", firmante);
+
+		Set<String> foliosPendientesFirma = new HashSet<>();
+
+		for (ConsultaReceptor receptor : receptoresPendientes) {
+
+			foliosPendientesFirma.add(receptor.getConsulta().getFolioAsunto());
+
 		}
-		
-		
-		return foliosPendientesFirma;
-		
-		
-	}
-	
-	
 
+		return foliosPendientesFirma;
+
+	}
+
+	@Transactional
+	@Override
+	public String actualizarConsulta(ConsultaRequest request) {
+
+		Consulta consultasToCheck = consulta.findById(request.getId())
+				.orElseThrow(() -> new IlegalActionException("El id de la consulta no existe"));
+
+		if (request.getComentarios() != null) {
+
+			consultasToCheck.setDetalle(request.getComentarios());
+		}
+
+		if (request.getSecuenciaFirma() != null) {
+
+			consultasToCheck.setSecuenciaFirma(request.getSecuenciaFirma());
+		}
+
+		if (request.getCadenaOriginal() != null) {
+
+			consultasToCheck.setCadenaOriginal(request.getCadenaOriginal());
+		}
+
+		if (request.getArchivos() != null) {
+			for (ArchivoConsultaRequestDto documentos : request.getArchivos()) {
+				if (documentos.getId() == 0) {
+					ArchivoConsulta archivoConsulta = new ArchivoConsulta();
+					archivoConsulta.setRuta(documentos.getRuta());
+					archivoConsulta.setNombre(documentos.getNombre());
+					archivoConsulta.setConsultaId(consultasToCheck);
+					archivoConsulta.setFechaCreacion(documentos.getFechaCreacion());
+					archivoConsulta
+							.setTipoDocumentoEnum(documentoRepository.findByNombre(documentos.getTipoDocumento()));
+					archivoConsulta.setTipoElementoEnum(elementoRepository.findByNombre(documentos.getTipoElemento()));
+					archivoConsulta.setEliminado(documentos.getEliminado());
+					archivosRepository.save(archivoConsulta);
+				} else {
+
+					for (ArchivoConsulta archivo : consultasToCheck.getArchivoConsulta()) {
+						if (archivo.getId() == documentos.getId()) {
+							archivo.setRuta(documentos.getRuta());
+							archivo.setNombre(documentos.getNombre());
+							archivo.setFechaCreacion(documentos.getFechaCreacion());
+							archivo.setTipoDocumentoEnum(
+									documentoRepository.findByNombre(documentos.getTipoDocumento()));
+							archivo.setTipoElementoEnum(elementoRepository.findByNombre(documentos.getTipoElemento()));
+							archivo.setEliminado(documentos.getEliminado());
+							archivosRepository.save(archivo);
+						}
+					}
+				}
+			}
+		}
+
+		if (request.getReceptor() != null) {
+
+			Optional<ConsultaReceptor> receptor = receptorRepository.findById(request.getReceptor().getId());
+
+			if (receptor.isPresent() && receptor.get().getConsulta().getId() == request.getId()) {
+
+				if (request.getReceptor().getFirmante() != null) {
+					receptor.get().setFirmante(request.getReceptor().getFirmante());
+				}
+
+				if (request.getReceptor().getEstatusSolicitud() != null) {
+					receptor.get().setEstatusSolicitud(request.getReceptor().getEstatusSolicitud());
+				}
+
+				if (request.getReceptor().getComentarioFirmante() != null) {
+					receptor.get().setComentarioFirmante(request.getReceptor().getComentarioFirmante());
+				}
+
+				receptorRepository.save(receptor.get());
+
+				if (request.getReceptor().getArchivos() != null) {
+
+					for (ArchivoConsultaRequestDto archivosReceptor : request.getReceptor().getArchivos()) {
+						if (archivosReceptor.getId() == 0) {
+							ArchivoConsulta ArchivoReceptor = new ArchivoConsulta();
+							ArchivoReceptor.setRuta(archivosReceptor.getRuta());
+							ArchivoReceptor.setNombre(archivosReceptor.getNombre());
+							ArchivoReceptor.setConsultaReceptor(receptor.get());
+							ArchivoReceptor.setFechaCreacion(archivosReceptor.getFechaCreacion());
+							ArchivoReceptor.setTipoDocumentoEnum(
+									documentoRepository.findByNombre(archivosReceptor.getTipoDocumento()));
+							ArchivoReceptor.setTipoElementoEnum(
+									elementoRepository.findByNombre(archivosReceptor.getTipoElemento()));
+							ArchivoReceptor.setEliminado(archivosReceptor.getEliminado());
+							archivosRepository.save(ArchivoReceptor);
+						} else {
+							for (ArchivoConsulta archivosReceptorConsulta : receptor.get().getArchivosReceptor()) {
+								if (archivosReceptor.getId() == archivosReceptorConsulta.getId()) {
+									archivosReceptorConsulta.setRuta(archivosReceptor.getRuta());
+									archivosReceptorConsulta.setNombre(archivosReceptor.getNombre());
+									archivosReceptorConsulta.setFechaCreacion(archivosReceptor.getFechaCreacion());
+									archivosReceptorConsulta.setTipoDocumentoEnum(
+											documentoRepository.findByNombre(archivosReceptor.getTipoDocumento()));
+									archivosReceptorConsulta.setTipoElementoEnum(
+											elementoRepository.findByNombre(archivosReceptor.getTipoElemento()));
+									archivosReceptorConsulta.setEliminado(archivosReceptor.getEliminado());
+									archivosRepository.save(archivosReceptorConsulta);
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
+		return "Se actualizo correctamente";
+	}
 
 }

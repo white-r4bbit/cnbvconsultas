@@ -1,7 +1,6 @@
 package com.cnbv.consultas.dtoRequest;
 
 import com.cnbv.consultas.models.EntidadExterna;
-import com.cnbv.consultas.models.EstatusSolicitudDto;
 
 public class ReceptorDto {
 
@@ -10,8 +9,21 @@ public class ReceptorDto {
 	private boolean esObligatoria;
 	private boolean esInterna;
 	private EntidadExterna entidadExterna;
-	private EstatusSolicitudDto estatus;
-
+	private String firmante;
+	private String estatusSolicitud;
+	
+	public String getFirmante() {
+		return firmante;
+	}
+	public void setFirmante(String firmante) {
+		this.firmante = firmante;
+	}
+	public String getEstatusSolicitud() {
+		return estatusSolicitud;
+	}
+	public void setEstatusSolicitud(String estatusSolicitud) {
+		this.estatusSolicitud = estatusSolicitud;
+	}
 	public String getClave() {
 		return clave;
 	}
@@ -52,11 +64,4 @@ public class ReceptorDto {
 		this.nombre = nombre;
 	}
 
-	public EstatusSolicitudDto getEstatusSolicitudResponse() {
-		return estatus;
-	}
-
-	public void setEstatusSolicitudResponse(EstatusSolicitudDto estatus) {
-		this.estatus = estatus;
-	}
 }

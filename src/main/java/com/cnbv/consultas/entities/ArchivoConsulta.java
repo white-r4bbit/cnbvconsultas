@@ -38,6 +38,19 @@ public class ArchivoConsulta {
 	private ConsultaReceptor consultaReceptor;
 	@Column(name = "Nombre",length = 1000,nullable = false)
 	private String nombre;
+	@Column(name = "Eliminado",nullable = true)
+	
+	private Boolean eliminado;
+	
+	public Boolean getEliminado() {
+		return eliminado;
+	}
+	public void setEliminado(Boolean eliminado) {
+		this.eliminado = eliminado;
+	}
+	public void setId(Integer id) {
+		this.id = id;
+	}
 	public int getId() {
 		return id;
 	}

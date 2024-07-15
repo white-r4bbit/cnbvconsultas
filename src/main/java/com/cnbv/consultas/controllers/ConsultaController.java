@@ -16,9 +16,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import com.cnbv.consultas.dtoRequest.ArchivoAdicionalDto;
 import com.cnbv.consultas.dtoRequest.ConsultaDto;
+import com.cnbv.consultas.dtoRequest.ConsultaRequest;
 import com.cnbv.consultas.dtoRequest.FinalizarConsultaDto;
 import com.cnbv.consultas.dtoRequest.FinalizarConsultaExternaDto;
 import com.cnbv.consultas.dtoResponse.ArchivoConsultaDtoResponse;
+import com.cnbv.consultas.dtoResponse.ConsultaCreateResponse;
 import com.cnbv.consultas.dtoResponse.ConsultaDetalleResponse;
 import com.cnbv.consultas.dtoResponse.ConsultaDtoResponse;
 import com.cnbv.consultas.dtoResponse.ConsultaExternaDetalle;
@@ -50,9 +52,9 @@ public class ConsultaController {
 
 		appInsightsService.trackEvent("Se ejecutó método solicitarconsulta");
 
-		int consultaId = solicitudConsulta.solicitarConsulta(consultaDtoRequest);
+		ConsultaCreateResponse consultaId = solicitudConsulta.solicitarConsulta(consultaDtoRequest);
 
-		if (consultaId != 0) {
+		if (consultaId.getId() != 0) {
 			return new ResponseEntity<>(consultaId, HttpStatus.CREATED);
 
 		} else {
@@ -231,14 +233,27 @@ public class ConsultaController {
 	
 	@Operation(tags = "Consultas", summary = "Permite traer los asuntos pendientes de firma.")
 	@GetMapping(value = "/obtenerAsuntosPendienteFirma")
-	public ResponseEntity<Set<String>> obtenerAsuntosPendienteFirma() {
+	public ResponseEntity<Set<String>> obtenerAsuntosPendienteFirma(String firmante) {
 
-		Set<String> pendientesFirma = solicitudConsulta.obtenerAsuntosPendienteFirma();
+		Set<String> pendientesFirma = solicitudConsulta.obtenerAsuntosPendienteFirma(firmante);
 
 			return new ResponseEntity<>(pendientesFirma, HttpStatus.OK);
 
 
 		
+
+	}
+	
+	
+	@Operation(tags = "Consultas", summary = "Permite generar un proceso de solicitud de consulta ", description = "Permite generar un proceso de solicitud de consulta de manera interna (áreas de la CNBV) y externa (Autoridades) sobre un folio asunto.")
+	@ApiResponses(value = { @ApiResponse(responseCode = "201"), @ApiResponse(responseCode = "409"),
+			@ApiResponse(responseCode = "500") })
+
+	@PatchMapping(value = "/actualizarConsulta")
+	public String actualizarConsulta(@RequestBody ConsultaRequest consultaDtoRequest) {
+		appInsightsService.trackEvent("Se ejecutó método solicitarconsulta");
+		return solicitudConsulta.actualizarConsulta(consultaDtoRequest);
+
 
 	}
 

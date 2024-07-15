@@ -16,4 +16,7 @@ public interface ReceptorRepository extends JpaRepository<ConsultaReceptor, Inte
 	int listIdEnvio();
 
 	List<ConsultaReceptor> findByEstatusSolicitud(String estatusSolicitud);
+
+	@Query("SELECT r FROM ConsultaReceptor r WHERE r.estatusSolicitud = :estatusSolicitud AND r.firmante = :firmante")
+	List<ConsultaReceptor> findByEstatusSolicitudAndFirmante(String estatusSolicitud, String firmante);
 }
